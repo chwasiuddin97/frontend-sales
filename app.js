@@ -419,7 +419,6 @@ const DashboardPage = ({ user, interactions }) => {
     </div>
   );
 };
-};
 
 // =======================
 // SALESPEOPLE PAGE
