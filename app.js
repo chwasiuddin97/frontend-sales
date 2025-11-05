@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './index.css';
 import {
   Upload,
@@ -46,6 +46,9 @@ const VideoAISystem = () => {
   const [currentPage, setCurrentPage] = useState('login');
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [pendingPage, setPendingPage] = useState(null);
+  const fadeTimers = useRef({ out: null, in: null });
 
   const [salespeople, setSalespeople] = useState([]);
   const [cars, setCars] = useState([]);
@@ -132,8 +135,45 @@ const VideoAISystem = () => {
   };
 
   const handleLogout = () => {
+    if (fadeTimers.current.out) {
+      clearTimeout(fadeTimers.current.out);
+      fadeTimers.current.out = null;
+    }
+    if (fadeTimers.current.in) {
+      clearTimeout(fadeTimers.current.in);
+      fadeTimers.current.in = null;
+    }
+    setIsTransitioning(false);
+    setPendingPage(null);
     setUser(null);
     setCurrentPage('login');
+  };
+
+  useEffect(() => {
+    return () => {
+      if (fadeTimers.current.out) clearTimeout(fadeTimers.current.out);
+      if (fadeTimers.current.in) clearTimeout(fadeTimers.current.in);
+    };
+  }, []);
+
+  const handlePageChange = (page) => {
+    if (page === currentPage || isTransitioning) return;
+
+    if (fadeTimers.current.out) clearTimeout(fadeTimers.current.out);
+    if (fadeTimers.current.in) clearTimeout(fadeTimers.current.in);
+
+    setPendingPage(page);
+    setIsTransitioning(true);
+
+    fadeTimers.current.out = setTimeout(() => {
+      setCurrentPage(page);
+      setPendingPage(null);
+      fadeTimers.current.out = null;
+      fadeTimers.current.in = setTimeout(() => {
+        setIsTransitioning(false);
+        fadeTimers.current.in = null;
+      }, 200);
+    }, 180);
   };
 
   const renderPage = () => {
@@ -155,8 +195,8 @@ const VideoAISystem = () => {
     ];
 
     const navButtonClasses = (page) =>
-      `px-4 py-2 rounded-xl transition-all duration-300 ${
-        currentPage === page
+      `px-4 py-2 rounded-xl transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-60 ${
+        currentPage === page || pendingPage === page
           ? 'bg-white/20 backdrop-blur-lg text-white shadow-lg'
           : 'text-white/70 hover:text-white hover:bg-white/10'
       }`;
@@ -182,15 +222,18 @@ const VideoAISystem = () => {
                 <div className="flex gap-2 items-center">
                   {navItems.map((item) => (
                     <button
+                      type="button"
                       key={item.key}
-                      onClick={() => setCurrentPage(item.key)}
+                      onClick={() => handlePageChange(item.key)}
                       className={`${navButtonClasses(item.key)} ripple`}
+                      disabled={isTransitioning}
                     >
                       {item.label}
                     </button>
                   ))}
 
                   <button
+                    type="button"
                     onClick={handleLogout}
                     className="px-4 py-2 bg-gradient-to-r from-rose-500 to-red-500 hover:from-rose-600 hover:to-red-600 text-white rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 ripple"
                   >
@@ -201,7 +244,11 @@ const VideoAISystem = () => {
             </div>
           </nav>
 
-          <main className="max-w-7xl mx-auto px-4 py-10 space-y-8">
+          <main
+            className={`max-w-7xl mx-auto px-4 py-10 space-y-8 transition-opacity duration-300 ease-in-out ${
+              isTransitioning ? 'opacity-0 pointer-events-none' : 'opacity-100'
+            }`}
+          >
             {currentPage === 'dashboard' && (
               <DashboardPage user={user} interactions={interactions} />
             )}
@@ -479,8 +526,8 @@ const SalesPeoplePage = ({ salespeople, setSalespeople }) => {
     };
 
     return (
-      <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto animate-fadeIn">
-        <div className="relative bg-white/95 rounded-3xl p-8 shadow-2xl max-w-lg w-full animate-slideUp">
+      <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-start justify-center p-4 sm:p-8 overflow-y-auto animate-fadeIn">
+        <div className="relative bg-white/95 rounded-3xl p-8 shadow-2xl max-w-lg w-full animate-slideUp max-h-[85vh] overflow-y-auto">
           <button
             onClick={onClose}
             className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-all duration-300 hover:rotate-90"
@@ -772,8 +819,8 @@ const CarsPage = ({ cars, setCars }) => {
     };
 
     return (
-      <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn overflow-y-auto">
-        <div className="relative bg-white/95 rounded-3xl p-8 shadow-2xl max-w-lg w-full animate-slideUp">
+      <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-start justify-center p-4 sm:p-8 overflow-y-auto animate-fadeIn">
+        <div className="relative bg-white/95 rounded-3xl p-8 shadow-2xl max-w-lg w-full animate-slideUp max-h-[85vh] overflow-y-auto">
           <button
             onClick={onClose}
             className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-all duration-300 hover:rotate-90"
