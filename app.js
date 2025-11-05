@@ -14,11 +14,8 @@ import {
   CheckCircle,
   Loader,
   X,
-  Bell,
-  Search,
   Sparkles,
   User,
-  MoonStar,
 } from 'lucide-react';
 
 const GlowCard = ({ children, className = '', variant = 'purple' }) => {
@@ -289,28 +286,6 @@ const VideoAISystem = () => {
               </div>
 
               <div className="flex items-center gap-3">
-                <div className="hidden lg:flex items-center gap-3 bg-white/5 border border-white/10 rounded-2xl px-3 py-2 backdrop-blur-xl">
-                  <Search size={18} className="text-white/40" />
-                  <input
-                    type="text"
-                    placeholder="Search people, cars, videos..."
-                    className="bg-transparent text-sm text-white placeholder-white/40 focus:outline-none"
-                  />
-                </div>
-                <button
-                  type="button"
-                  className="relative w-11 h-11 rounded-2xl border border-white/10 bg-white/10 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/20 transition-colors ripple"
-                >
-                  <Bell size={18} />
-                  <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-emerald-400 animate-ping"></span>
-                  <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-emerald-400"></span>
-                </button>
-                <button
-                  type="button"
-                  className="w-11 h-11 rounded-2xl border border-white/10 bg-white/10 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/20 transition-colors ripple"
-                >
-                  <MoonStar size={18} />
-                </button>
                 <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-2xl px-3 py-2 backdrop-blur-xl">
                   <div className="relative">
                     <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-700 flex items-center justify-center text-white/80">
