@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import './index.css';
 import {
   Upload,
@@ -14,27 +14,96 @@ import {
   CheckCircle,
   Loader,
   X,
+  Bell,
+  Search,
+  Sparkles,
+  User,
+  MoonStar,
 } from 'lucide-react';
 
 const GlowCard = ({ children, className = '', variant = 'purple' }) => {
   const gradients = {
-    purple: 'from-pink-500 via-purple-500 to-indigo-500',
-    blue: 'from-blue-500 via-indigo-500 to-purple-500',
+    purple: 'from-fuchsia-500 via-violet-500 to-blue-500',
+    blue: 'from-cyan-500 via-blue-500 to-indigo-500',
     green: 'from-emerald-400 via-teal-500 to-cyan-500',
+    silver: 'from-slate-300 via-slate-100 to-white',
   };
 
   const gradientClass = gradients[variant] || gradients.purple;
+  const cardRef = useRef(null);
+  const [tiltStyle, setTiltStyle] = useState({ transform: 'perspective(1200px)' });
+
+  const handleMouseMove = (event) => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    const rotateX = ((y - rect.height / 2) / rect.height) * -12;
+    const rotateY = ((x - rect.width / 2) / rect.width) * 12;
+
+    setTiltStyle({
+      transform: `perspective(1200px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) scale3d(1.01, 1.01, 1.01)`,
+    });
+  };
+
+  const handleMouseLeave = () => {
+    setTiltStyle({ transform: 'perspective(1200px) rotateX(0deg) rotateY(0deg)' });
+  };
 
   return (
-    <div className="group relative">
+    <div className="group relative" onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave}>
       <div
-        className={`absolute -inset-0.5 bg-gradient-to-r ${gradientClass} rounded-3xl opacity-0 group-hover:opacity-70 blur-xl transition duration-500`}
+        className={`absolute -inset-[3px] bg-gradient-to-r ${gradientClass} rounded-[1.75rem] opacity-0 group-hover:opacity-80 blur-xl transition duration-500`}
       ></div>
       <div
-        className={`relative bg-white/90 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-xl hover:shadow-[0_35px_60px_-15px_rgba(72,37,117,0.45)] transition-all duration-300 ${className}`}
+        ref={cardRef}
+        style={tiltStyle}
+        className={`relative rounded-[1.65rem] border border-white/10 bg-gradient-to-br from-slate-950/80 via-slate-900/70 to-slate-800/60 text-slate-100 shadow-[0_20px_60px_-25px_rgba(0,0,0,0.85)] transition-all duration-300 ${className}`}
       >
-        {children}
+        <div className="pointer-events-none absolute inset-0 rounded-[1.65rem] bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+        <div className="relative z-10">{children}</div>
       </div>
+    </div>
+  );
+};
+
+const AmbientBackdrop = ({ children }) => {
+  const particles = useMemo(
+    () =>
+      Array.from({ length: 16 }, (_, index) => ({
+        id: index,
+        size: 160 + Math.random() * 140,
+        top: Math.random() * 80,
+        left: Math.random() * 100,
+        delay: Math.random() * 6,
+        duration: 10 + Math.random() * 12,
+        opacity: 0.08 + Math.random() * 0.12,
+      })),
+    []
+  );
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 relative overflow-hidden text-slate-100">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-to-br from-blue-500/15 to-purple-500/15 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute -bottom-1/2 -right-1/2 w-full h-full bg-gradient-to-tl from-pink-500/15 to-orange-500/15 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        {particles.map((particle) => (
+          <span
+            key={particle.id}
+            style={{
+              top: `${particle.top}%`,
+              left: `${particle.left}%`,
+              width: `${particle.size}px`,
+              height: `${particle.size}px`,
+              animationDelay: `${particle.delay}s`,
+              animationDuration: `${particle.duration}s`,
+              opacity: particle.opacity,
+            }}
+            className="floating-particle"
+          ></span>
+        ))}
+      </div>
+      <div className="relative z-10">{children}</div>
     </div>
   );
 };
@@ -202,76 +271,116 @@ const VideoAISystem = () => {
       }`;
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden text-white">
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute -bottom-1/2 -right-1/2 w-full h-full bg-gradient-to-tl from-pink-500/20 to-orange-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        </div>
-
-        <div className="relative z-10">
-          <nav className="bg-white/10 backdrop-blur-xl border-b border-white/20 sticky top-0 z-50 shadow-2xl">
-            <div className="max-w-7xl mx-auto px-4">
-              <div className="flex justify-between items-center h-16">
-                <div className="flex items-center gap-3">
-                  <div className="bg-gradient-to-r from-blue-500 to-purple-500 p-2 rounded-xl shadow-lg">
-                    <Video className="text-white" size={28} />
+      <AmbientBackdrop>
+        <nav className="bg-white/5 backdrop-blur-2xl border-b border-white/10 sticky top-0 z-50 shadow-[0_25px_60px_-35px_rgba(0,0,0,0.85)]">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="flex justify-between items-center h-20">
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  <div className="bg-gradient-to-r from-blue-500 to-purple-500 p-2.5 rounded-2xl shadow-lg">
+                    <Video className="text-white" size={26} />
                   </div>
-                  <span className="text-xl font-bold gradient-text">Video AI System</span>
+                  <Sparkles className="absolute -top-2 -right-2 text-blue-300 animate-softPulse" size={18} />
                 </div>
+                <div>
+                  <span className="text-2xl font-bold gradient-text tracking-tight block">Video AI Command Center</span>
+                  <p className="text-sm text-white/50">Craft cinematic, data-driven experiences for every lead.</p>
+                </div>
+              </div>
 
-                <div className="flex gap-2 items-center">
-                  {navItems.map((item) => (
-                    <button
-                      type="button"
-                      key={item.key}
-                      onClick={() => handlePageChange(item.key)}
-                      className={`${navButtonClasses(item.key)} ripple`}
-                      disabled={isTransitioning}
-                    >
-                      {item.label}
-                    </button>
-                  ))}
-
-                  <button
-                    type="button"
-                    onClick={handleLogout}
-                    className="px-4 py-2 bg-gradient-to-r from-rose-500 to-red-500 hover:from-rose-600 hover:to-red-600 text-white rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 ripple"
-                  >
-                    Logout
-                  </button>
+              <div className="flex items-center gap-3">
+                <div className="hidden lg:flex items-center gap-3 bg-white/5 border border-white/10 rounded-2xl px-3 py-2 backdrop-blur-xl">
+                  <Search size={18} className="text-white/40" />
+                  <input
+                    type="text"
+                    placeholder="Search people, cars, videos..."
+                    className="bg-transparent text-sm text-white placeholder-white/40 focus:outline-none"
+                  />
+                </div>
+                <button
+                  type="button"
+                  className="relative w-11 h-11 rounded-2xl border border-white/10 bg-white/10 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/20 transition-colors ripple"
+                >
+                  <Bell size={18} />
+                  <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-emerald-400 animate-ping"></span>
+                  <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-emerald-400"></span>
+                </button>
+                <button
+                  type="button"
+                  className="w-11 h-11 rounded-2xl border border-white/10 bg-white/10 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/20 transition-colors ripple"
+                >
+                  <MoonStar size={18} />
+                </button>
+                <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-2xl px-3 py-2 backdrop-blur-xl">
+                  <div className="relative">
+                    <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-700 flex items-center justify-center text-white/80">
+                      <User size={18} />
+                    </div>
+                    <span className="absolute -bottom-1 -right-1 flex h-3 w-3">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                    </span>
+                  </div>
+                  <div className="leading-tight">
+                    <p className="text-sm font-semibold text-white">{user.name}</p>
+                    <p className="text-xs text-white/50">{user.role?.toUpperCase()}</p>
+                  </div>
                 </div>
               </div>
             </div>
-          </nav>
 
-          <main
-            className={`max-w-7xl mx-auto px-4 py-10 space-y-8 transition-opacity duration-300 ease-in-out ${
-              isTransitioning ? 'opacity-0 pointer-events-none' : 'opacity-100'
-            }`}
-          >
-            {currentPage === 'dashboard' && (
-              <DashboardPage user={user} interactions={interactions} />
-            )}
-            {currentPage === 'salespeople' && (
-              <SalesPeoplePage
-                salespeople={salespeople}
-                setSalespeople={setSalespeople}
-              />
-            )}
-            {currentPage === 'cars' && (
-              <CarsPage cars={cars} setCars={setCars} />
-            )}
-            {currentPage === 'create-video' && (
-              <CreateVideoPage
-                salespeople={salespeople}
-                cars={cars}
-                interactions={interactions}
-                setInteractions={setInteractions}
-              />
-            )}
-          </main>
-        </div>
-      </div>
+            <div className="flex flex-wrap items-center justify-between gap-3 pb-4">
+              <div className="flex flex-wrap gap-2">
+                {navItems.map((item) => (
+                  <button
+                    type="button"
+                    key={item.key}
+                    onClick={() => handlePageChange(item.key)}
+                    className={`${navButtonClasses(item.key)} ripple`}
+                    disabled={isTransitioning}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="px-4 py-2.5 bg-gradient-to-r from-rose-500 to-red-500 hover:from-rose-600 hover:to-red-600 text-white rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 ripple"
+                >
+                  Logout
+                </button>
+              </div>
+            </div>
+          </div>
+        </nav>
+
+        <main
+          className={`max-w-7xl mx-auto px-4 py-12 space-y-10 transition-opacity duration-300 ease-in-out ${
+            isTransitioning ? 'opacity-0 pointer-events-none' : 'opacity-100'
+          }`}
+        >
+          {currentPage === 'dashboard' && (
+            <DashboardPage user={user} interactions={interactions} />
+          )}
+          {currentPage === 'salespeople' && (
+            <SalesPeoplePage
+              salespeople={salespeople}
+              setSalespeople={setSalespeople}
+            />
+          )}
+          {currentPage === 'cars' && <CarsPage cars={cars} setCars={setCars} />}
+          {currentPage === 'create-video' && (
+            <CreateVideoPage
+              salespeople={salespeople}
+              cars={cars}
+              interactions={interactions}
+              setInteractions={setInteractions}
+            />
+          )}
+        </main>
+      </AmbientBackdrop>
     );
   };
 
@@ -304,14 +413,14 @@ const LoginPage = ({ onLogin, loading }) => {
               <Video className="text-white" size={32} />
             </div>
             <h1 className="text-4xl font-bold gradient-text">Video AI System</h1>
-            <p className="text-gray-600">
+            <p className="text-white/70">
               Automated personalized video generation for your dealership
             </p>
           </div>
 
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div className="space-y-2 text-left">
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-white/70">
                 Email
               </label>
               <input
@@ -324,7 +433,7 @@ const LoginPage = ({ onLogin, loading }) => {
             </div>
 
             <div className="space-y-2 text-left">
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-white/70">
                 Password
               </label>
               <input
@@ -345,7 +454,7 @@ const LoginPage = ({ onLogin, loading }) => {
             </button>
           </form>
 
-          <div className="text-center text-sm text-gray-500">
+          <div className="text-center text-sm text-white/50">
             <p>Demo credentials: any email/password</p>
           </div>
         </GlowCard>
@@ -360,42 +469,75 @@ const LoginPage = ({ onLogin, loading }) => {
 const DashboardPage = ({ user, interactions }) => {
   const StatCard = ({ icon: Icon, label, value, color }) => {
     const iconClasses = {
-      blue: 'bg-gradient-to-br from-blue-100 to-indigo-100 text-blue-600',
-      green: 'bg-gradient-to-br from-emerald-100 to-teal-100 text-emerald-600',
-      purple: 'bg-gradient-to-br from-purple-100 to-pink-100 text-purple-600',
-      orange: 'bg-gradient-to-br from-orange-100 to-amber-100 text-orange-600',
+      blue: 'bg-gradient-to-br from-blue-400/20 to-indigo-400/10 text-blue-300',
+      green: 'bg-gradient-to-br from-emerald-400/20 to-teal-400/10 text-emerald-300',
+      purple: 'bg-gradient-to-br from-purple-400/20 to-pink-400/10 text-purple-300',
+      orange: 'bg-gradient-to-br from-amber-400/20 to-orange-400/10 text-amber-300',
     };
 
-    const progressGradients = {
-      blue: 'from-blue-500 to-indigo-500',
-      green: 'from-emerald-500 to-teal-500',
-      purple: 'from-purple-500 to-pink-500',
-      orange: 'from-amber-500 to-orange-500',
+    const sparklineData = {
+      blue: [32, 46, 38, 54, 63, 58, 72],
+      green: [22, 28, 35, 44, 51, 49, 60],
+      purple: [18, 26, 34, 40, 37, 45, 53],
+      orange: [12, 18, 16, 20, 24, 23, 28],
     };
 
-    const progressWidths = {
-      'Videos Created': '82%',
-      'Videos Sent': '74%',
-      'Videos Viewed': '68%',
-      'Conversion Rate': '45%',
+    const accentGradients = {
+      blue: 'from-sky-400 via-blue-500 to-indigo-500',
+      green: 'from-emerald-400 via-teal-400 to-cyan-400',
+      purple: 'from-fuchsia-400 via-purple-500 to-indigo-500',
+      orange: 'from-amber-400 via-orange-500 to-rose-500',
     };
+
+    const data = sparklineData[color] || sparklineData.blue;
+    const width = 140;
+    const height = 50;
+    const step = width / (data.length - 1);
+    const points = data
+      .map((value, index) => {
+        const x = index * step;
+        const y = height - (value / 80) * height;
+        return `${x.toFixed(1)},${y.toFixed(1)}`;
+      })
+      .join(' L ');
 
     return (
-      <div className="bg-gradient-to-br from-white/95 to-white/70 rounded-2xl shadow-xl p-6 hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 cursor-pointer border border-white/40">
-        <div className="flex items-center gap-4">
-          <div className={`p-4 rounded-2xl shadow-inner ${iconClasses[color]}`}>
-            <Icon size={32} />
+      <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-slate-900/90 via-slate-900/80 to-slate-800/70 p-6 shadow-[0_20px_60px_-40px_rgba(0,0,0,0.95)] hover:shadow-[0_25px_70px_-40px_rgba(56,189,248,0.35)] transform hover:-translate-y-2 transition-all duration-300 cursor-pointer">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className={`p-4 rounded-2xl shadow-inner ${iconClasses[color]}`}>
+              <Icon size={30} />
+            </div>
+            <div>
+              <p className="text-white/60 text-xs font-medium tracking-widest uppercase">{label}</p>
+              <p className="text-4xl font-bold gradient-text">{value}</p>
+            </div>
           </div>
-          <div>
-            <p className="text-gray-600 text-sm font-medium">{label}</p>
-            <p className="text-4xl font-bold gradient-text">{value}</p>
+          <div className="w-24 h-24 rounded-full border border-white/10 bg-white/5 flex items-center justify-center">
+            <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${accentGradients[color]} flex items-center justify-center text-white font-semibold text-lg`}>↗</div>
           </div>
         </div>
-        <div className="mt-4 h-2 bg-gray-200/70 rounded-full overflow-hidden">
-          <div
-            className={`h-full bg-gradient-to-r ${progressGradients[color]} rounded-full animate-pulse`}
-            style={{ width: progressWidths[label] || '70%' }}
-          ></div>
+        <div className="mt-4">
+          <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-14" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id={`spark-${color}`} x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="rgba(125, 211, 252, 0.6)" />
+                <stop offset="100%" stopColor="rgba(147, 51, 234, 0.4)" />
+              </linearGradient>
+            </defs>
+            <path
+              d={`M 0,${height} L ${points} L ${width},${height}`}
+              fill={`url(#spark-${color})`}
+              opacity="0.35"
+            />
+            <path
+              d={`M ${points}`}
+              fill="none"
+              stroke={`url(#spark-${color})`}
+              strokeWidth="3"
+              strokeLinecap="round"
+            />
+          </svg>
         </div>
       </div>
     );
@@ -405,7 +547,7 @@ const DashboardPage = ({ user, interactions }) => {
     <div className="space-y-8">
       <div className="space-y-2">
         <h1 className="text-4xl font-bold gradient-text">Welcome, {user.name}!</h1>
-        <p className="text-white/70 max-w-2xl">
+        <p className="text-white/60 max-w-2xl">
           Track performance, manage inventory, and deliver cinematic customer experiences with AI-generated videos.
         </p>
       </div>
@@ -419,17 +561,17 @@ const DashboardPage = ({ user, interactions }) => {
 
       <GlowCard className="p-6 space-y-6">
         <div className="flex items-center justify-between flex-wrap gap-4">
-          <h2 className="text-2xl font-semibold text-slate-800">
+          <h2 className="text-2xl font-semibold text-white">
             Recent Activity
           </h2>
         </div>
 
         {interactions.length === 0 ? (
-          <div className="text-center py-12 text-slate-500 space-y-4">
-            <div className="mx-auto w-20 h-20 bg-gradient-to-br from-slate-200 to-slate-100 rounded-3xl flex items-center justify-center">
-              <Video size={40} className="text-slate-400" />
+          <div className="text-center py-12 text-white/40 space-y-4">
+            <div className="mx-auto w-20 h-20 bg-gradient-to-br from-slate-800/70 to-slate-700/60 rounded-3xl flex items-center justify-center">
+              <Video size={40} className="text-white/50" />
             </div>
-            <p className="text-slate-600">
+            <p className="text-white/60">
               No videos created yet. Start by creating your first personalized video!
             </p>
           </div>
@@ -438,25 +580,25 @@ const DashboardPage = ({ user, interactions }) => {
             {interactions.map((interaction, idx) => (
               <div
                 key={idx}
-                className="relative overflow-hidden rounded-2xl border border-white/40 bg-white/70 p-4 flex items-center justify-between transition-all duration-300 hover:-translate-y-1 hover:border-purple-300/80"
+                className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-4 flex items-center justify-between transition-all duration-300 hover:-translate-y-1 hover:border-purple-400/40"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 to-purple-500/0 opacity-0 transition-opacity duration-500 hover:opacity-100"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10 opacity-0 transition-opacity duration-500 hover:opacity-100"></div>
                 <div className="relative flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-300 flex items-center justify-center">
                     <Video size={22} />
                   </div>
                   <div>
-                    <p className="font-semibold text-slate-800">
+                    <p className="font-semibold text-white">
                       {interaction.customerName}
                     </p>
-                    <p className="text-sm text-slate-500">{interaction.carName}</p>
+                    <p className="text-sm text-white/60">{interaction.carName}</p>
                   </div>
                 </div>
                 <div className="relative text-right">
-                  <p className="text-sm font-medium text-slate-600">
+                  <p className="text-sm font-medium text-white/70">
                     {interaction.status}
                   </p>
-                  <p className="text-xs text-slate-400">{interaction.date}</p>
+                  <p className="text-xs text-white/50">{interaction.date}</p>
                 </div>
               </div>
             ))}
@@ -482,12 +624,42 @@ const SalesPeoplePage = ({ salespeople, setSalespeople }) => {
     const [greetingVideo, setGreetingVideo] = useState(null);
     const [voiceSample, setVoiceSample] = useState(null);
     const [uploading, setUploading] = useState(false);
+    const [step, setStep] = useState(1);
 
-    const handleSubmit = async (e) => {
-      e.preventDefault();
+    const steps = [
+      {
+        id: 1,
+        title: 'Profile Details',
+        description: 'Tell us who is starring in the video experience.',
+      },
+      {
+        id: 2,
+        title: 'Signature Media',
+        description: 'Upload the assets that make their presence shine.',
+      },
+      {
+        id: 3,
+        title: 'Review & Launch',
+        description: 'Confirm their profile before we craft their digital twin.',
+      },
+    ];
 
-      if (!greetingVideo || !voiceSample) {
-        alert('Please upload both greeting video and voice sample!');
+    const isProfileComplete = formData.name.trim() && formData.email.trim();
+    const isMediaComplete = Boolean(greetingVideo && voiceSample);
+
+    const goToNextStep = () => {
+      if (step === 1 && !isProfileComplete) return;
+      if (step === 2 && !isMediaComplete) return;
+      setStep((prev) => Math.min(prev + 1, steps.length));
+    };
+
+    const goToPrevStep = () => {
+      setStep((prev) => Math.max(prev - 1, 1));
+    };
+
+    const handleSubmit = async () => {
+      if (!isProfileComplete || !isMediaComplete) {
+        alert('Please complete all steps before submitting.');
         return;
       }
 
@@ -525,161 +697,231 @@ const SalesPeoplePage = ({ salespeople, setSalespeople }) => {
       }
     };
 
+    const renderStepContent = () => {
+      switch (step) {
+        case 1:
+          return (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-white/60">Name *</label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  required
+                  className="w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-white placeholder-white/40 focus:ring-2 focus:ring-purple-400 focus:border-transparent"
+                  placeholder="Alex Johnson"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-white/60">Email *</label>
+                <input
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  required
+                  className="w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-white placeholder-white/40 focus:ring-2 focus:ring-purple-400 focus:border-transparent"
+                  placeholder="alex@dealership.com"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-white/60">Phone</label>
+                <input
+                  type="tel"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  className="w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-white placeholder-white/40 focus:ring-2 focus:ring-purple-400 focus:border-transparent"
+                  placeholder="+1 (555) 123-4567"
+                />
+              </div>
+            </div>
+          );
+        case 2:
+          return (
+            <div className="space-y-5">
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-white/60">Greeting Video *</label>
+                <div className="relative">
+                  <input
+                    type="file"
+                    id="sales-greeting-upload"
+                    accept="video/mp4,video/quicktime"
+                    onChange={(e) => setGreetingVideo(e.target.files[0])}
+                    className="hidden"
+                  />
+                  <label
+                    htmlFor="sales-greeting-upload"
+                    className="block border-2 border-dashed border-white/10 rounded-2xl p-8 text-center cursor-pointer hover:border-blue-400/60 hover:bg-blue-500/10 transition-all duration-300 group"
+                  >
+                    <Upload
+                      className="mx-auto mb-3 text-white/40 group-hover:text-blue-300 group-hover:scale-110 transition-all duration-300"
+                      size={48}
+                    />
+                    <p className="text-white/70 group-hover:text-blue-200 font-medium">
+                      Click to upload or drag & drop
+                    </p>
+                    <p className="text-sm text-white/40 mt-2">MP4, MOV (max 100MB)</p>
+                  </label>
+                  {greetingVideo && (
+                    <div className="mt-3 p-3 bg-emerald-500/10 border border-emerald-400/30 rounded-xl flex items-center gap-2 animate-slideUp">
+                      <CheckCircle className="text-emerald-300" size={20} />
+                      <span className="text-emerald-200 font-medium truncate">{greetingVideo.name}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-white/60">Voice Sample *</label>
+                <div className="relative">
+                  <input
+                    type="file"
+                    id="sales-voice-upload"
+                    accept="audio/mpeg,audio/mp3"
+                    onChange={(e) => setVoiceSample(e.target.files[0])}
+                    className="hidden"
+                  />
+                  <label
+                    htmlFor="sales-voice-upload"
+                    className="block border-2 border-dashed border-white/10 rounded-2xl p-8 text-center cursor-pointer hover:border-purple-400/60 hover:bg-purple-500/10 transition-all duration-300 group"
+                  >
+                    <Upload
+                      className="mx-auto mb-3 text-white/40 group-hover:text-purple-300 group-hover:scale-110 transition-all duration-300"
+                      size={48}
+                    />
+                    <p className="text-white/70 group-hover:text-purple-200 font-medium">
+                      Click to upload or drag & drop
+                    </p>
+                    <p className="text-sm text-white/40 mt-2">MP3 (max 50MB)</p>
+                  </label>
+                  {voiceSample && (
+                    <div className="mt-3 p-3 bg-emerald-500/10 border border-emerald-400/30 rounded-xl flex items-center gap-2 animate-slideUp">
+                      <CheckCircle className="text-emerald-300" size={20} />
+                      <span className="text-emerald-200 font-medium truncate">{voiceSample.name}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-4 text-sm text-white/70 space-y-1">
+                <p className="font-semibold flex items-center gap-2 text-white">
+                  📝 What to upload
+                </p>
+                <p>
+                  <strong>Greeting video:</strong> 15-30 sec video of a warm introduction.
+                </p>
+                <p>
+                  <strong>Voice sample:</strong> 1-2 min audio capturing natural conversation.
+                </p>
+              </div>
+            </div>
+          );
+        case 3:
+          return (
+            <div className="space-y-5">
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-5 space-y-4">
+                <div>
+                  <p className="text-sm text-white/50">Name</p>
+                  <p className="text-lg font-semibold text-white">{formData.name}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-white/50">Email</p>
+                  <p className="text-lg font-semibold text-white">{formData.email}</p>
+                </div>
+                {formData.phone && (
+                  <div>
+                    <p className="text-sm text-white/50">Phone</p>
+                    <p className="text-lg font-semibold text-white">{formData.phone}</p>
+                  </div>
+                )}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="rounded-xl border border-blue-400/30 bg-blue-500/10 p-4 text-white/70">
+                    <p className="text-xs uppercase tracking-[0.2em] text-white/50">Greeting Video</p>
+                    <p className="mt-2 font-semibold text-white truncate">
+                      {greetingVideo?.name || 'Pending upload'}
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-purple-400/30 bg-purple-500/10 p-4 text-white/70">
+                    <p className="text-xs uppercase tracking-[0.2em] text-white/50">Voice Sample</p>
+                    <p className="mt-2 font-semibold text-white truncate">
+                      {voiceSample?.name || 'Pending upload'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <p className="text-white/60 text-sm">
+                We’ll craft a digital persona using these assets. You can edit the salesperson later for additional fine-tuning.
+              </p>
+            </div>
+          );
+        default:
+          return null;
+      }
+    };
+
+    const isPrimaryDisabled =
+      (step === 1 && !isProfileComplete) ||
+      (step === 2 && !isMediaComplete) ||
+      (step === 3 && uploading);
+
+    const primaryLabel =
+      step === steps.length ? (uploading ? 'Uploading…' : 'Launch Persona') : 'Continue';
+
+    const handlePrimaryAction = () => {
+      if (step === steps.length) {
+        if (!uploading) {
+          handleSubmit();
+        }
+      } else {
+        goToNextStep();
+      }
+    };
+
     return (
-      <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-start justify-center p-4 sm:p-8 overflow-y-auto animate-fadeIn">
-        <div className="relative bg-white/95 rounded-3xl p-8 shadow-2xl max-w-lg w-full animate-slideUp max-h-[85vh] overflow-y-auto">
+      <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-start justify-center p-4 sm:p-8 overflow-y-auto animate-fadeIn">
+        <div className="relative bg-gradient-to-br from-slate-950/95 via-slate-900/95 to-slate-900/90 text-slate-100 rounded-3xl p-8 shadow-[0_30px_80px_-40px_rgba(0,0,0,0.9)] max-w-lg w-full animate-slideUp max-h-[85vh] overflow-y-auto">
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-all duration-300 hover:rotate-90"
+            className="absolute top-4 right-4 text-white/40 hover:text-white transition-all duration-300 hover:rotate-90"
           >
             <X size={24} />
           </button>
 
-          <h2 className="text-3xl font-semibold gradient-text mb-6">Add Salesperson</h2>
-
-          <div className="space-y-5">
+          <div className="space-y-6">
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-slate-600">
-                Name *
-              </label>
-              <input
-                type="text"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                required
-                className="w-full rounded-2xl border border-slate-200/60 bg-white/80 px-4 py-3 text-slate-800 shadow-inner focus:ring-2 focus:ring-purple-400 focus:border-transparent"
-                placeholder="Alex Johnson"
-              />
+              <h2 className="text-3xl font-semibold gradient-text">Add Salesperson</h2>
+              <p className="text-sm text-white/50">Orchestrate a new on-brand persona in three polished steps.</p>
             </div>
 
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-slate-600">
-                Email *
-              </label>
-              <input
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                required
-                className="w-full rounded-2xl border border-slate-200/60 bg-white/80 px-4 py-3 text-slate-800 shadow-inner focus:ring-2 focus:ring-purple-400 focus:border-transparent"
-                placeholder="alex@dealership.com"
-              />
+            <div className="flex items-center gap-3">
+              {steps.map((item) => (
+                <div key={item.id} className={`flex-1 h-2 rounded-full ${step >= item.id ? 'bg-gradient-to-r from-blue-500 to-purple-500' : 'bg-white/10'}`}></div>
+              ))}
             </div>
 
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-slate-600">
-                Phone
-              </label>
-              <input
-                type="tel"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                className="w-full rounded-2xl border border-slate-200/60 bg-white/80 px-4 py-3 text-slate-800 shadow-inner focus:ring-2 focus:ring-purple-400 focus:border-transparent"
-                placeholder="+1 (555) 123-4567"
-              />
+            <div className="space-y-1">
+              <p className="text-sm font-semibold text-white/70">{steps[step - 1].title}</p>
+              <p className="text-xs text-white/50">{steps[step - 1].description}</p>
             </div>
 
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-slate-600">
-                Greeting Video * (MP4, 15-30 seconds)
-              </label>
-              <div className="relative">
-                <input
-                  type="file"
-                  id="sales-greeting-upload"
-                  accept="video/mp4,video/quicktime"
-                  onChange={(e) => setGreetingVideo(e.target.files[0])}
-                  className="hidden"
-                />
-                <label
-                  htmlFor="sales-greeting-upload"
-                  className="block border-2 border-dashed border-slate-200 rounded-2xl p-8 text-center cursor-pointer hover:border-blue-500 hover:bg-blue-50/60 transition-all duration-300 group"
-                >
-                  <Upload
-                    className="mx-auto mb-3 text-slate-400 group-hover:text-blue-600 group-hover:scale-110 transition-all duration-300"
-                    size={48}
-                  />
-                  <p className="text-slate-600 group-hover:text-blue-600 font-medium">
-                    Click to upload or drag & drop
-                  </p>
-                  <p className="text-sm text-slate-400 mt-2">MP4, MOV (max 100MB)</p>
-                </label>
-                {greetingVideo && (
-                  <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-xl flex items-center gap-2 animate-slideUp">
-                    <CheckCircle className="text-green-600" size={20} />
-                    <span className="text-green-700 font-medium truncate">{greetingVideo.name}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-slate-600">
-                Voice Sample * (MP3, 1-2 minutes)
-              </label>
-              <div className="relative">
-                <input
-                  type="file"
-                  id="sales-voice-upload"
-                  accept="audio/mpeg,audio/mp3"
-                  onChange={(e) => setVoiceSample(e.target.files[0])}
-                  className="hidden"
-                />
-                <label
-                  htmlFor="sales-voice-upload"
-                  className="block border-2 border-dashed border-slate-200 rounded-2xl p-8 text-center cursor-pointer hover:border-purple-500 hover:bg-purple-50/60 transition-all duration-300 group"
-                >
-                  <Upload
-                    className="mx-auto mb-3 text-slate-400 group-hover:text-purple-600 group-hover:scale-110 transition-all duration-300"
-                    size={48}
-                  />
-                  <p className="text-slate-600 group-hover:text-purple-600 font-medium">
-                    Click to upload or drag & drop
-                  </p>
-                  <p className="text-sm text-slate-400 mt-2">MP3 (max 50MB)</p>
-                </label>
-                {voiceSample && (
-                  <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-xl flex items-center gap-2 animate-slideUp">
-                    <CheckCircle className="text-green-600" size={20} />
-                    <span className="text-green-700 font-medium truncate">{voiceSample.name}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="bg-blue-50/70 border border-blue-200/70 rounded-2xl p-4 text-sm text-blue-900 space-y-1">
-              <p className="font-semibold flex items-center gap-2">
-                📝 What to upload
-              </p>
-              <p>
-                <strong>Greeting video:</strong> 15-30 sec video of salesperson saying a warm, generic welcome.
-              </p>
-              <p>
-                <strong>Voice sample:</strong> 1-2 min audio of natural conversation to train AI voice.
-              </p>
-            </div>
+            <div className="space-y-6">{renderStepContent()}</div>
 
             <div className="flex gap-3 pt-2">
               <button
-                onClick={onClose}
+                onClick={step === 1 ? onClose : goToPrevStep}
                 disabled={uploading}
-                className="flex-1 px-5 py-3 rounded-2xl border border-slate-200 hover:bg-slate-100 text-slate-600 font-medium transition-all duration-200 ripple disabled:opacity-60"
+                className="flex-1 px-5 py-3 rounded-2xl border border-white/10 bg-white/5 text-white/80 hover:bg-white/10 transition-all duration-200 ripple disabled:opacity-60"
               >
-                Cancel
+                {step === 1 ? 'Cancel' : 'Back'}
               </button>
               <button
-                onClick={handleSubmit}
-                disabled={uploading}
+                onClick={handlePrimaryAction}
+                disabled={isPrimaryDisabled}
                 className="flex-1 btn-primary justify-center ripple disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                {uploading ? (
-                  <>
-                    <Loader className="animate-spin" size={18} />
-                    Uploading...
-                  </>
-                ) : (
-                  'Add Salesperson'
-                )}
+                {uploading ? <Loader className="animate-spin" size={18} /> : primaryLabel}
               </button>
             </div>
           </div>
@@ -693,7 +935,7 @@ const SalesPeoplePage = ({ salespeople, setSalespeople }) => {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="space-y-1">
           <h1 className="text-4xl font-bold gradient-text">Manage Salespeople</h1>
-          <p className="text-white/70">
+          <p className="text-white/60">
             Upload greeting videos and voice samples to personalize AI outreach.
           </p>
         </div>
@@ -711,10 +953,10 @@ const SalesPeoplePage = ({ salespeople, setSalespeople }) => {
 
       {salespeople.length === 0 ? (
         <GlowCard className="p-12 text-center space-y-4">
-          <div className="mx-auto w-20 h-20 rounded-3xl bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center text-purple-500">
+          <div className="mx-auto w-20 h-20 rounded-3xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center text-purple-200">
             <Users size={40} />
           </div>
-          <p className="text-slate-600">
+          <p className="text-white/60">
             No salespeople added yet. Start by inviting your first team member.
           </p>
           <button
@@ -730,8 +972,8 @@ const SalesPeoplePage = ({ salespeople, setSalespeople }) => {
           {salespeople.map((person, idx) => (
             <GlowCard key={idx} className="p-6 space-y-6">
               <div className="relative overflow-hidden rounded-2xl">
-                <div className="h-48 bg-gradient-to-br from-slate-200 to-slate-300 flex items-center justify-center">
-                  <Users className="text-slate-500 transition-transform duration-500 group-hover:scale-110" size={56} />
+                <div className="h-48 bg-gradient-to-br from-slate-800/60 to-slate-700/50 flex items-center justify-center">
+                  <Users className="text-white/60 transition-transform duration-500 group-hover:scale-110" size={56} />
                 </div>
                 <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                   <Play className="text-white transform scale-0 group-hover:scale-100 transition-transform duration-300" size={40} />
@@ -739,13 +981,13 @@ const SalesPeoplePage = ({ salespeople, setSalespeople }) => {
               </div>
 
               <div className="space-y-2">
-                <h3 className="text-xl font-semibold text-slate-800">{person.name}</h3>
-                <p className="text-sm text-slate-500">{person.email}</p>
-                {person.phone && <p className="text-sm text-slate-500">{person.phone}</p>}
+                <h3 className="text-xl font-semibold text-white">{person.name}</h3>
+                <p className="text-sm text-white/60">{person.email}</p>
+                {person.phone && <p className="text-sm text-white/60">{person.phone}</p>}
               </div>
 
               <div className="flex items-center gap-3">
-                <button className="flex-1 px-4 py-3 rounded-2xl border border-slate-200 bg-white/80 hover:bg-white text-slate-600 font-medium transition-all duration-200 ripple inline-flex items-center justify-center gap-2">
+                <button className="flex-1 px-4 py-3 rounded-2xl border border-white/10 bg-white/10 hover:bg-white/20 text-white font-medium transition-all duration-200 ripple inline-flex items-center justify-center gap-2">
                   <Edit size={16} />
                   Edit
                 </button>
@@ -784,9 +1026,45 @@ const CarsPage = ({ cars, setCars }) => {
       features: '',
     });
     const [carVideo, setCarVideo] = useState(null);
+    const [step, setStep] = useState(1);
+    const [uploading, setUploading] = useState(false);
 
-    const handleSubmit = async (e) => {
-      e.preventDefault();
+    const steps = [
+      {
+        id: 1,
+        title: 'Vehicle Identity',
+        description: 'Give the system the essentials about this model.',
+      },
+      {
+        id: 2,
+        title: 'Experience Touchpoints',
+        description: 'Highlight the storytelling beats that will wow customers.',
+      },
+      {
+        id: 3,
+        title: 'Showcase Preview',
+        description: 'Confirm the cinematic package before publishing.',
+      },
+    ];
+
+    const isBasicsComplete = formData.name.trim() && formData.price;
+    const isExperienceComplete = Boolean(formData.features.trim() && carVideo);
+
+    const goToNextStep = () => {
+      if (step === 1 && !isBasicsComplete) return;
+      if (step === 2 && !isExperienceComplete) return;
+      setStep((prev) => Math.min(prev + 1, steps.length));
+    };
+
+    const goToPrevStep = () => setStep((prev) => Math.max(prev - 1, 1));
+
+    const handleSubmit = async () => {
+      if (!isBasicsComplete || !isExperienceComplete) {
+        alert('Please complete all steps before publishing the showcase.');
+        return;
+      }
+
+      setUploading(true);
       try {
         const token = localStorage.getItem('token');
         const formDataToSend = new FormData();
@@ -815,108 +1093,191 @@ const CarsPage = ({ cars, setCars }) => {
       } catch (err) {
         console.error('Car upload failed:', err);
         alert('Failed to add car. Check console for details.');
+      } finally {
+        setUploading(false);
+      }
+    };
+    const renderStep = () => {
+      switch (step) {
+        case 1:
+          return (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-white/60">Car Name *</label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="Luxe GT 580"
+                  className="w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-white/60">Price *</label>
+                <input
+                  type="number"
+                  value={formData.price}
+                  onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                  placeholder="98000"
+                  className="w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                />
+              </div>
+            </div>
+          );
+        case 2:
+          return (
+            <div className="space-y-5">
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-white/60">Signature Highlights *</label>
+                <textarea
+                  value={formData.features}
+                  onChange={(e) => setFormData({ ...formData, features: e.target.value })}
+                  placeholder="Hand-stitched leather, 4D adaptive suspension, panoramic starlight roof"
+                  rows={3}
+                  className="w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-white/60">Cinematic Reel *</label>
+                <div className="relative">
+                  <input
+                    type="file"
+                    id="car-video-upload"
+                    accept="video/mp4,video/quicktime"
+                    onChange={(e) => setCarVideo(e.target.files[0])}
+                    className="hidden"
+                  />
+                  <label
+                    htmlFor="car-video-upload"
+                    className="block border-2 border-dashed border-white/10 rounded-2xl p-8 text-center cursor-pointer hover:border-pink-400/60 hover:bg-pink-500/10 transition-all duration-300 group"
+                  >
+                    <Upload
+                      className="mx-auto mb-3 text-white/40 group-hover:text-pink-300 group-hover:scale-110 transition-all duration-300"
+                      size={48}
+                    />
+                    <p className="text-white/70 group-hover:text-pink-200 font-medium">
+                      Click to upload or drag & drop
+                    </p>
+                    <p className="text-sm text-white/40 mt-2">MP4, MOV (max 150MB)</p>
+                  </label>
+                  {carVideo && (
+                    <div className="mt-3 p-3 bg-emerald-500/10 border border-emerald-400/30 rounded-xl flex items-center gap-2 animate-slideUp">
+                      <CheckCircle className="text-emerald-300" size={20} />
+                      <span className="text-emerald-200 font-medium truncate">{carVideo.name}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-white/70 text-sm">
+                <p className="font-semibold text-white">Tip for impact</p>
+                <p className="mt-1">Use dynamic shots—drive-bys, interior close-ups, infotainment demos—to help the AI craft compelling narratives.</p>
+              </div>
+            </div>
+          );
+        case 3:
+          return (
+            <div className="space-y-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="rounded-2xl border border-blue-400/30 bg-blue-500/10 p-4 text-white">
+                  <p className="text-xs uppercase tracking-[0.2em] text-white/60">Model</p>
+                  <p className="mt-2 text-xl font-semibold">{formData.name || '—'}</p>
+                </div>
+                <div className="rounded-2xl border border-emerald-400/30 bg-emerald-500/10 p-4 text-white">
+                  <p className="text-xs uppercase tracking-[0.2em] text-white/60">MSRP</p>
+                  <p className="mt-2 text-xl font-semibold">
+                    {formData.price ? `$${Number(formData.price).toLocaleString()}` : '—'}
+                  </p>
+                </div>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-white/70">
+                <p className="text-xs uppercase tracking-[0.3em] text-white/50">Highlights</p>
+                <p className="mt-2 whitespace-pre-line text-white">
+                  {formData.features || 'No highlights provided yet.'}
+                </p>
+              </div>
+              <div className="rounded-2xl border border-pink-400/30 bg-pink-500/10 p-4 text-white/70 flex items-center justify-between">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.3em] text-white/50">Cinematic Reel</p>
+                  <p className="mt-2 text-white font-semibold truncate">
+                    {carVideo?.name || 'Pending upload'}
+                  </p>
+                </div>
+                <Play size={28} className="text-white/70" />
+              </div>
+              <p className="text-sm text-white/60">
+                This showcase will appear in sales workflows and AI video prompts immediately after publishing.
+              </p>
+            </div>
+          );
+        default:
+          return null;
+      }
+    };
+
+    const isPrimaryDisabled =
+      (step === 1 && !isBasicsComplete) ||
+      (step === 2 && !isExperienceComplete) ||
+      (step === 3 && uploading);
+
+    const primaryLabel =
+      step === steps.length ? (uploading ? 'Publishing…' : 'Publish Showcase') : 'Continue';
+
+    const handlePrimaryAction = () => {
+      if (step === steps.length) {
+        if (!uploading) {
+          handleSubmit();
+        }
+      } else {
+        goToNextStep();
       }
     };
 
     return (
-      <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-start justify-center p-4 sm:p-8 overflow-y-auto animate-fadeIn">
-        <div className="relative bg-white/95 rounded-3xl p-8 shadow-2xl max-w-lg w-full animate-slideUp max-h-[85vh] overflow-y-auto">
+      <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-start justify-center p-4 sm:p-8 overflow-y-auto animate-fadeIn">
+        <div className="relative bg-gradient-to-br from-slate-950/95 via-slate-900/95 to-slate-900/90 text-slate-100 rounded-3xl p-8 shadow-[0_30px_80px_-40px_rgba(0,0,0,0.9)] max-w-lg w-full animate-slideUp max-h-[85vh] overflow-y-auto">
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-all duration-300 hover:rotate-90"
+            className="absolute top-4 right-4 text-white/40 hover:text-white transition-all duration-300 hover:rotate-90"
           >
             <X size={24} />
           </button>
 
-          <h2 className="text-3xl font-semibold gradient-text mb-6">Add Car</h2>
-
-          <form className="space-y-5" onSubmit={handleSubmit}>
+          <div className="space-y-6">
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-slate-600">
-                Car Name
-              </label>
-              <input
-                type="text"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Ford Mustang GT"
-                className="w-full rounded-2xl border border-slate-200/60 bg-white/80 px-4 py-3 text-slate-800 shadow-inner focus:ring-2 focus:ring-purple-400 focus:border-transparent"
-              />
+              <h2 className="text-3xl font-semibold gradient-text">Add Car</h2>
+              <p className="text-sm text-white/50">Craft a silver-screen worthy profile that matches your showroom energy.</p>
             </div>
 
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-slate-600">
-                Price
-              </label>
-              <input
-                type="number"
-                value={formData.price}
-                onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                placeholder="55000"
-                className="w-full rounded-2xl border border-slate-200/60 bg-white/80 px-4 py-3 text-slate-800 shadow-inner focus:ring-2 focus:ring-purple-400 focus:border-transparent"
-              />
+            <div className="flex items-center gap-3">
+              {steps.map((item) => (
+                <div key={item.id} className={`flex-1 h-2 rounded-full ${step >= item.id ? 'bg-gradient-to-r from-pink-500 to-blue-500' : 'bg-white/10'}`}></div>
+              ))}
             </div>
 
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-slate-600">
-                Features (comma-separated)
-              </label>
-              <textarea
-                value={formData.features}
-                onChange={(e) => setFormData({ ...formData, features: e.target.value })}
-                placeholder="V8 Engine, 450HP, Sporty Design"
-                rows={3}
-                className="w-full rounded-2xl border border-slate-200/60 bg-white/80 px-4 py-3 text-slate-800 shadow-inner focus:ring-2 focus:ring-purple-400 focus:border-transparent"
-              />
+            <div className="space-y-1">
+              <p className="text-sm font-semibold text-white/70">{steps[step - 1].title}</p>
+              <p className="text-xs text-white/50">{steps[step - 1].description}</p>
             </div>
 
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-slate-600">
-                Car Video * (MP4, 10–30 seconds)
-              </label>
-              <div className="relative">
-                <input
-                  type="file"
-                  id="car-video-upload"
-                  accept="video/mp4,video/quicktime"
-                  onChange={(e) => setCarVideo(e.target.files[0])}
-                  className="hidden"
-                />
-                <label
-                  htmlFor="car-video-upload"
-                  className="block border-2 border-dashed border-slate-200 rounded-2xl p-8 text-center cursor-pointer hover:border-pink-500 hover:bg-pink-50/60 transition-all duration-300 group"
-                >
-                  <Upload
-                    className="mx-auto mb-3 text-slate-400 group-hover:text-pink-600 group-hover:scale-110 transition-all duration-300"
-                    size={48}
-                  />
-                  <p className="text-slate-600 group-hover:text-pink-600 font-medium">
-                    Click to upload or drag & drop
-                  </p>
-                  <p className="text-sm text-slate-400 mt-2">MP4, MOV (max 150MB)</p>
-                </label>
-                {carVideo && (
-                  <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-xl flex items-center gap-2 animate-slideUp">
-                    <CheckCircle className="text-green-600" size={20} />
-                    <span className="text-green-700 font-medium truncate">{carVideo.name}</span>
-                  </div>
-                )}
-              </div>
-            </div>
+            <div className="space-y-6">{renderStep()}</div>
 
             <div className="flex gap-3 pt-2">
               <button
-                type="button"
-                onClick={onClose}
-                className="flex-1 px-5 py-3 rounded-2xl border border-slate-200 hover:bg-slate-100 text-slate-600 font-medium transition-all duration-200 ripple"
+                onClick={step === 1 ? onClose : goToPrevStep}
+                disabled={uploading}
+                className="flex-1 px-5 py-3 rounded-2xl border border-white/10 bg-white/5 text-white/80 hover:bg-white/10 transition-all duration-200 ripple disabled:opacity-60"
               >
-                Cancel
+                {step === 1 ? 'Cancel' : 'Back'}
               </button>
-              <button type="submit" className="flex-1 btn-primary justify-center ripple">
-                Add Car
+              <button
+                onClick={handlePrimaryAction}
+                disabled={isPrimaryDisabled}
+                className="flex-1 btn-primary justify-center ripple disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {uploading ? <Loader className="animate-spin" size={18} /> : primaryLabel}
               </button>
             </div>
-          </form>
+          </div>
         </div>
       </div>
     );
@@ -927,7 +1288,7 @@ const CarsPage = ({ cars, setCars }) => {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="space-y-1">
           <h1 className="text-4xl font-bold gradient-text">Manage Cars</h1>
-          <p className="text-white/70">
+          <p className="text-white/60">
             Keep your inventory vibrant with cinematic showcases and feature highlights.
           </p>
         </div>
@@ -945,10 +1306,10 @@ const CarsPage = ({ cars, setCars }) => {
 
       {cars.length === 0 ? (
         <GlowCard className="p-12 text-center space-y-4">
-          <div className="mx-auto w-20 h-20 rounded-3xl bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center text-purple-500">
+          <div className="mx-auto w-20 h-20 rounded-3xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center text-pink-200">
             <Car size={40} />
           </div>
-          <p className="text-slate-600">
+          <p className="text-white/60">
             No cars added yet. Upload your first vehicle to start creating videos.
           </p>
           <button
@@ -964,8 +1325,8 @@ const CarsPage = ({ cars, setCars }) => {
           {cars.map((car, idx) => (
             <GlowCard key={idx} className="p-6 space-y-6">
               <div className="relative overflow-hidden rounded-2xl">
-                <div className="h-48 bg-gradient-to-br from-slate-200 to-slate-300 flex items-center justify-center">
-                  <Car className="text-slate-500 transition-transform duration-500 group-hover:scale-110" size={56} />
+                <div className="h-48 bg-gradient-to-br from-slate-800/60 to-slate-700/50 flex items-center justify-center">
+                  <Car className="text-white/60 transition-transform duration-500 group-hover:scale-110" size={56} />
                 </div>
                 <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                   <Play className="text-white transform scale-0 group-hover:scale-100 transition-transform duration-300" size={40} />
@@ -973,7 +1334,7 @@ const CarsPage = ({ cars, setCars }) => {
               </div>
 
               <div className="space-y-2">
-                <h3 className="text-2xl font-semibold text-slate-800">{car.name}</h3>
+                <h3 className="text-2xl font-semibold text-white">{car.name}</h3>
                 <p className="text-3xl font-bold gradient-text">
                   ${car.price?.toLocaleString()}
                 </p>
@@ -981,7 +1342,7 @@ const CarsPage = ({ cars, setCars }) => {
 
               {car.features && (
                 <div className="space-y-2">
-                  <p className="text-sm font-semibold text-slate-600">Features</p>
+                  <p className="text-sm font-semibold text-white/70">Features</p>
                   <div className="flex flex-wrap gap-2">
                     {(Array.isArray(car.features)
                       ? car.features
@@ -993,7 +1354,7 @@ const CarsPage = ({ cars, setCars }) => {
                       .map((feature, i) => (
                         <span
                           key={i}
-                          className="px-3 py-1 rounded-full bg-gradient-to-r from-blue-100 to-purple-100 text-blue-700 text-xs font-medium"
+                          className="px-3 py-1 rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-blue-100 text-xs font-medium"
                         >
                           {feature.trim()}
                         </span>
@@ -1003,7 +1364,7 @@ const CarsPage = ({ cars, setCars }) => {
               )}
 
               <div className="flex items-center gap-3">
-                <button className="flex-1 px-4 py-3 rounded-2xl border border-slate-200 bg-white/80 hover:bg-white text-slate-600 font-medium transition-all duration-200 ripple inline-flex items-center justify-center gap-2">
+                <button className="flex-1 px-4 py-3 rounded-2xl border border-white/10 bg-white/10 hover:bg-white/20 text-white font-medium transition-all duration-200 ripple inline-flex items-center justify-center gap-2">
                   <Edit size={16} />
                   Edit
                 </button>
@@ -1154,18 +1515,18 @@ const CreateVideoPage = ({ salespeople, cars, interactions, setInteractions }) =
     <div className="max-w-5xl mx-auto space-y-8">
       <div className="space-y-2">
         <h1 className="text-4xl font-bold gradient-text">Create Personalized Video</h1>
-        <p className="text-white/70">
+        <p className="text-white/60">
           Capture the excitement of every test drive with AI scripts and cinematic video delivery.
         </p>
       </div>
 
       <GlowCard className="p-8 space-y-8">
         <div className="space-y-6">
-          <h2 className="text-2xl font-semibold text-slate-800">Customer Information</h2>
+          <h2 className="text-2xl font-semibold text-white">Customer Information</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-slate-600">
+              <label className="block text-sm font-medium text-white/60">
                 Customer Name
               </label>
               <input
@@ -1173,12 +1534,12 @@ const CreateVideoPage = ({ salespeople, cars, interactions, setInteractions }) =
                 value={formData.customerName}
                 onChange={(e) => handleInputChange('customerName', e.target.value)}
                 placeholder="Wasi Ahmed"
-                className="w-full rounded-2xl border border-slate-200/60 bg-white/80 px-4 py-3 text-slate-800 shadow-inner focus:ring-2 focus:ring-purple-400 focus:border-transparent"
+                className="w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-white placeholder-white/40 focus:ring-2 focus:ring-purple-400 focus:border-transparent"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-slate-600">
+              <label className="block text-sm font-medium text-white/60">
                 Email
               </label>
               <input
@@ -1186,13 +1547,13 @@ const CreateVideoPage = ({ salespeople, cars, interactions, setInteractions }) =
                 value={formData.customerEmail}
                 onChange={(e) => handleInputChange('customerEmail', e.target.value)}
                 placeholder="wasi@email.com"
-                className="w-full rounded-2xl border border-slate-200/60 bg-white/80 px-4 py-3 text-slate-800 shadow-inner focus:ring-2 focus:ring-purple-400 focus:border-transparent"
+                className="w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-white placeholder-white/40 focus:ring-2 focus:ring-purple-400 focus:border-transparent"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-slate-600">
+            <label className="block text-sm font-medium text-white/60">
               Phone
             </label>
             <input
@@ -1200,23 +1561,23 @@ const CreateVideoPage = ({ salespeople, cars, interactions, setInteractions }) =
               value={formData.customerPhone}
               onChange={(e) => handleInputChange('customerPhone', e.target.value)}
               placeholder="+1 (555) 123-4567"
-              className="w-full rounded-2xl border border-slate-200/60 bg-white/80 px-4 py-3 text-slate-800 shadow-inner focus:ring-2 focus:ring-purple-400 focus:border-transparent"
+              className="w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-white placeholder-white/40 focus:ring-2 focus:ring-purple-400 focus:border-transparent"
             />
           </div>
         </div>
 
         <div className="space-y-6">
-          <h2 className="text-2xl font-semibold text-slate-800">Interaction Details</h2>
+          <h2 className="text-2xl font-semibold text-white">Interaction Details</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-slate-600">
+              <label className="block text-sm font-medium text-white/60">
                 Salesperson
               </label>
               <select
                 value={formData.salespersonId}
                 onChange={(e) => handleInputChange('salespersonId', e.target.value)}
-                className="w-full rounded-2xl border border-slate-200/60 bg-white/80 px-4 py-3 text-slate-800 focus:ring-2 focus:ring-purple-400 focus:border-transparent"
+                className="w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-white focus:ring-2 focus:ring-purple-400 focus:border-transparent"
               >
                 <option value="">Select Salesperson</option>
                 {salespeople.map((person) => (
@@ -1228,13 +1589,13 @@ const CreateVideoPage = ({ salespeople, cars, interactions, setInteractions }) =
             </div>
 
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-slate-600">
+              <label className="block text-sm font-medium text-white/60">
                 Car
               </label>
               <select
                 value={formData.carId}
                 onChange={(e) => handleInputChange('carId', e.target.value)}
-                className="w-full rounded-2xl border border-slate-200/60 bg-white/80 px-4 py-3 text-slate-800 focus:ring-2 focus:ring-purple-400 focus:border-transparent"
+                className="w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-white focus:ring-2 focus:ring-purple-400 focus:border-transparent"
               >
                 <option value="">Select Car</option>
                 {cars.map((car) => (
@@ -1247,7 +1608,7 @@ const CreateVideoPage = ({ salespeople, cars, interactions, setInteractions }) =
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-slate-600">
+            <label className="block text-sm font-medium text-white/60">
               Features Discussed
             </label>
             <input
@@ -1260,12 +1621,12 @@ const CreateVideoPage = ({ salespeople, cars, interactions, setInteractions }) =
                 )
               }
               placeholder="powerful engine, sporty design, red color"
-              className="w-full rounded-2xl border border-slate-200/60 bg-white/80 px-4 py-3 text-slate-800 shadow-inner focus:ring-2 focus:ring-purple-400 focus:border-transparent"
+              className="w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-white placeholder-white/40 focus:ring-2 focus:ring-purple-400 focus:border-transparent"
             />
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-slate-600">
+            <label className="block text-sm font-medium text-white/60">
               Additional Notes
             </label>
             <textarea
@@ -1273,7 +1634,7 @@ const CreateVideoPage = ({ salespeople, cars, interactions, setInteractions }) =
               onChange={(e) => handleInputChange('notes', e.target.value)}
               placeholder="Customer loved the acceleration test, interested in financing options..."
               rows={4}
-              className="w-full rounded-2xl border border-slate-200/60 bg-white/80 px-4 py-3 text-slate-800 shadow-inner focus:ring-2 focus:ring-purple-400 focus:border-transparent"
+              className="w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-white placeholder-white/40 focus:ring-2 focus:ring-purple-400 focus:border-transparent"
             />
           </div>
         </div>
@@ -1300,19 +1661,19 @@ const CreateVideoPage = ({ salespeople, cars, interactions, setInteractions }) =
       </GlowCard>
 
       {showPreview && generatedScript && (
-        <GlowCard className="p-8 space-y-5" variant="green">
-          <h2 className="text-2xl font-semibold text-slate-800">
+        <GlowCard className="p-8 space-y-5" variant="silver">
+          <h2 className="text-2xl font-semibold text-white">
             Generated Script Preview
           </h2>
 
-          <div className="bg-slate-900/90 text-slate-100 rounded-2xl p-6 border border-slate-700/60 shadow-inner">
-            <p className="whitespace-pre-line leading-relaxed">{generatedScript}</p>
+          <div className="bg-white/5 text-white rounded-2xl p-6 border border-white/10 shadow-inner">
+            <p className="whitespace-pre-line leading-relaxed text-white/80">{generatedScript}</p>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4">
             <button
               onClick={() => setShowPreview(false)}
-              className="flex-1 px-6 py-3 rounded-2xl border border-slate-200 hover:bg-slate-100 text-slate-600 font-medium transition-all duration-200 ripple"
+              className="flex-1 px-6 py-3 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 text-white font-medium transition-all duration-200 ripple"
             >
               Edit Script
             </button>

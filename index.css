@@ -18,6 +18,10 @@
   .btn-primary {
     @apply inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200;
   }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl border border-white/10 bg-white/5 text-white/80 hover:bg-white/10 transition-all duration-200;
+  }
 }
 
 @keyframes pulse {
@@ -38,6 +42,42 @@
 
 .delay-1000 {
   animation-delay: 1s;
+}
+
+@keyframes softPulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+}
+
+.animate-softPulse {
+  animation: softPulse 6s ease-in-out infinite;
+}
+
+@keyframes particleDrift {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+  }
+  50% {
+    transform: translate3d(20px, -30px, 0) rotate(15deg) scale(1.05);
+  }
+  100% {
+    transform: translate3d(-10px, 25px, 0) rotate(-12deg) scale(0.95);
+  }
+}
+
+.floating-particle {
+  position: absolute;
+  border-radius: 9999px;
+  background: radial-gradient(circle at 30% 30%, rgba(148, 163, 184, 0.35), rgba(30, 41, 59, 0));
+  filter: blur(0px);
+  animation: particleDrift 18s ease-in-out infinite alternate;
 }
 
 @keyframes fadeIn {
